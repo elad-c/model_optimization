@@ -112,6 +112,7 @@ class QATKerasModelBuilder(KerasModelBuilder):
             if len(nodes) == 1:
                 node = nodes[0]
                 if _is_qat_applicable(node, self.fw_info):
+                    layer.trainable = True
                     return QuantizeWrapper(layer,
                                            quantization_config_builder(node,
                                                                        self.fw_info))
@@ -128,5 +129,9 @@ class QATKerasModelBuilder(KerasModelBuilder):
         qat_model = tf.keras.models.clone_model(model,
                                                 input_tensors=None,
                                                 clone_function=_quantize)
+
+        for l in qat_model.layers:
+            if '_qat_bn' in l.name:
+                l.trainable = True
 
         return qat_model, user_info

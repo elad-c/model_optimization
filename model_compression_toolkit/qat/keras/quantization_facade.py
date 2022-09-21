@@ -150,7 +150,12 @@ if FOUND_TF:
 
         tg = ptq_runner(tg, fw_info, fw_impl, tb_w)
 
-        qat_model, user_info = QATKerasModelBuilder(graph=tg, fw_info=fw_info).build_model()
+        from model_compression_toolkit.core.common.substitutions.apply_substitutions import substitute
+        from model_compression_toolkit.core.keras.graph_substitutions.substitutions.batchnorm_unfolding import BatchNormalizationUnFolding
+        tg = substitute(tg, [BatchNormalizationUnFolding()])  # TODO: put sub in fw_impl
+
+        outs = None
+        qat_model, user_info = QATKerasModelBuilder(graph=tg, fw_info=fw_info, append2output=outs).build_model()
 
         user_info.mixed_precision_cfg = bit_widths_config
 
